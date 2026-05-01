@@ -12,33 +12,54 @@ import {
   Shirt, 
   Wind, 
   Loader2, 
-  ChevronRight,
-  RefreshCw,
-  Download,
-  X,
-  Smartphone,
-  Book,
-  Utensils
+  ChevronRight, 
+  RefreshCw, 
+  Download, 
+  X, 
+  Smartphone, 
+  Book, 
+  Utensils, 
+  Sofa, 
+  Baby, 
+  Instagram, 
+  Pin,
+  Palette,
+  Maximize2,
+  Copy,
+  CheckCircle2,
+  ArrowRightLeft
 } from 'lucide-react';
-import { generateMockup, MockupCategory } from './services/geminiService';
+import { generateMockup, MockupCategory, generateAIData } from './services/geminiService';
 
-const CATEGORIES: { id: MockupCategory; name: string; icon: React.ReactNode }[] = [
-  { id: 'wallpaper', name: 'Wallpaper', icon: <ImageIcon className="w-5 h-5" /> },
-  { id: 'bag', name: 'Bag', icon: <ShoppingBag className="w-5 h-5" /> },
-  { id: 'clothing', name: 'Clothing', icon: <Shirt className="w-5 h-5" /> },
-  { id: 'curtains', name: 'Curtains', icon: <Wind className="w-5 h-5" /> },
-  { id: 'kitchen', name: 'Kitchen', icon: <Utensils className="w-5 h-5" /> },
-  { id: 'phone_case', name: 'Phone Case', icon: <Smartphone className="w-5 h-5" /> },
-  { id: 'notebook', name: 'Notebook', icon: <Book className="w-5 h-5" /> },
+const CATEGORIES: { id: MockupCategory; name: string; icon: React.ReactNode; description: string }[] = [
+  { id: 'wallpaper', name: 'Wallpaper', icon: <ImageIcon className="w-5 h-5" />, description: 'Apply seamless patterns to interior walls' },
+  { id: 'bag', name: 'Bag', icon: <ShoppingBag className="w-5 h-5" />, description: 'Visualize patterns on fashion tote bags' },
+  { id: 'clothing', name: 'Clothing', icon: <Shirt className="w-5 h-5" />, description: 'Mockup patterns on apparel and dresses' },
+  { id: 'baby_clothes', name: 'Baby Clothes', icon: <Baby className="w-5 h-5" />, description: 'Sweet patterns for infant onesies and blankets' },
+  { id: 'curtains', name: 'Curtains', icon: <Wind className="w-5 h-5" />, description: 'See textures on window drapery' },
+  { id: 'kitchen', name: 'Kitchen', icon: <Utensils className="w-5 h-5" />, description: 'Tile patterns and kitchen fabric mockups' },
+  { id: 'living_room', name: 'Living Room', icon: <Sofa className="w-5 h-5" />, description: 'Full room visualization with pillows and rugs' },
+  { id: 'phone_case', name: 'Phone Case', icon: <Smartphone className="w-5 h-5" />, description: 'Digital pattern wraps for mobile devices' },
+  { id: 'notebook', name: 'Notebook', icon: <Book className="w-5 h-5" />, description: 'Patterns on stationery and book covers' },
+  { id: 'moodboard', name: 'Moodboard', icon: <Palette className="w-5 h-5" />, description: 'Lifestyle moodboard with matching props and colors' },
 ];
 
+type ActiveTab = 'mockup' | 'pins' | 'instagram';
+
 export default function App() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('mockup');
   const [selectedCategory, setSelectedCategory] = useState<MockupCategory>('wallpaper');
+  const [patternScale, setPatternScale] = useState<number>(1.0);
   const [patternImage, setPatternImage] = useState<string | null>(null);
   const [patternMimeType, setPatternMimeType] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // AI Generated Data states
+  const [aiData, setAiData] = useState<any>(null);
+  const [isGeneratingAIData, setIsGeneratingAIData] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +70,7 @@ export default function App() {
         setPatternMimeType(file.type);
         setResultImage(null);
         setError(null);
+        setAiData(null);
       };
       reader.readAsDataURL(file);
     }
@@ -59,6 +81,21 @@ export default function App() {
     setPatternMimeType('');
     setResultImage(null);
     setError(null);
+    setAiData(null);
+  };
+
+  const handleAIDataGeneration = async (type: 'pinterest' | 'instagram') => {
+    if (!patternImage) return;
+    setIsGeneratingAIData(true);
+    try {
+      const base64Data = patternImage.split(',')[1];
+      const data = await generateAIData(base64Data, patternMimeType, type);
+      setAiData(data);
+    } catch (err) {
+      console.error("AI Data Generation failed", err);
+    } finally {
+      setIsGeneratingAIData(false);
+    }
   };
 
   const handleGenerate = async () => {
@@ -70,10 +107,18 @@ export default function App() {
     try {
       // Extract base64 without prefix
       const base64Data = patternImage.split(',')[1];
-      const result = await generateMockup(base64Data, patternMimeType, selectedCategory);
+      const result = await generateMockup(base64Data, patternMimeType, selectedCategory, patternScale);
       setResultImage(result);
+
+      if (activeTab !== 'mockup') {
+        handleAIDataGeneration(activeTab === 'pins' ? 'pinterest' : 'instagram');
+      }
     } catch (err: any) {
-      setError(err?.message || "Failed to generate mockup. Please try again.");
+      if (err?.message?.includes('429') || err?.message?.includes('RESOURCE_EXHAUSTED')) {
+        setError("API Quota Exceeded. Please wait 60 seconds before trying again. (무료 호출 한도를 초과했습니다. 1분 후 다시 시도해주세요.)");
+      } else {
+        setError(err?.message || "Failed to generate mockup. Please try again.");
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -87,9 +132,41 @@ export default function App() {
     link.click();
   };
 
+  const downloadResized = (width: number, height: number, label: string) => {
+    if (!resultImage) return;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    
+    img.onload = () => {
+      canvas.width = width;
+      canvas.height = height;
+      
+      const scale = Math.max(width / img.width, height / img.height);
+      const x = (width - img.width * scale) / 2;
+      const y = (height - img.height * scale) / 2;
+      
+      ctx?.drawImage(img, x, y, img.width * scale, img.height * scale);
+      
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `aedelstudio-${label}-${selectedCategory}.png`;
+      link.click();
+    };
+    img.src = resultImage;
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="min-h-screen bg-[#F0F4F8] text-[#1E293B] font-sans">
-      <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-[#E2FDF2] text-[#1E293B] font-sans transition-colors duration-500">
+      <div className="max-w-6xl mx-auto px-4 py-12">
         
         {/* Header Section */}
         <motion.header 
@@ -97,159 +174,244 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center space-x-2 bg-white px-3 py-1 rounded-full shadow-sm mb-4 border border-[#E2E8F0]">
-            <div className="w-2 h-2 bg-[#F27D26] rounded-full animate-pulse" />
-            <span className="text-xs uppercase tracking-widest font-semibold text-[#64748B]">Professional Mockup Generator</span>
+          <div className="inline-flex items-center space-x-2 bg-white px-4 py-1.5 rounded-full shadow-sm mb-6 border border-[#79D2AF]/30">
+            <div className="w-2.5 h-2.5 bg-[#79D2AF] rounded-full animate-pulse shadow-[0_0_10px_#79D2AF]" />
+            <span className="text-xs uppercase tracking-widest font-bold text-[#2D6A4F]">Aedelstudio Engine v2.5</span>
           </div>
-          <h1 className="text-5xl font-bold tracking-tight text-[#0F172A] mb-4">
-            Bring your patterns to life
+          <h1 className="text-6xl font-black tracking-tight text-[#2D6A4F] mb-4 drop-shadow-sm">
+            aedelstudio Mockup Generator
           </h1>
-          <p className="text-lg text-[#64748B] max-w-xl mx-auto">
-            Upload your tileable pattern and visualize it instantly on high-quality realistic mockups.
+          <p className="text-xl text-[#52B788] max-w-2xl mx-auto font-medium">
+            Elevate your designs with AI-powered realism. Visualize, Optimize, and Share.
           </p>
         </motion.header>
 
-        {/* Tab Navigation (Aesthetic only like in image) */}
-        <div className="flex justify-center mb-10">
-          <div className="bg-[#E2E8F0]/50 p-1.5 rounded-2xl flex space-x-1">
-            <button className="px-8 py-2.5 rounded-xl text-sm font-semibold bg-white shadow-sm text-[#0F172A] transition-all">Mockup</button>
-            <button className="px-8 py-2.5 rounded-xl text-sm font-semibold text-[#64748B] hover:bg-white/50 transition-all cursor-not-allowed opacity-50">Templates</button>
-            <button className="px-8 py-2.5 rounded-xl text-sm font-semibold text-[#64748B] hover:bg-white/50 transition-all cursor-not-allowed opacity-50">Settings</button>
+        {/* Improved Tab Navigation */}
+        <div className="flex justify-center mb-12">
+          <div className="bg-white/60 p-2 rounded-[2rem] flex space-x-2 border border-[#79D2AF]/40 backdrop-blur-md shadow-lg overflow-visible">
+            
+            <div className="group relative">
+              <button 
+                onClick={() => { setActiveTab('mockup'); setAiData(null); }}
+                className={`px-10 py-3 rounded-[1.5rem] text-sm font-bold transition-all flex items-center space-x-2 ${
+                  activeTab === 'mockup' ? 'bg-[#79D2AF] text-white shadow-md' : 'text-[#2D6A4F] hover:bg-white/80'
+                }`}
+              >
+                <ImageIcon className="w-5 h-5" />
+                <span>Mockup</span>
+              </button>
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 hidden group-hover:block bg-[#1B4332] text-white text-[11px] py-2 px-3 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-bottom-2">
+                Create new photorealistic mockups from your pattern tiles.
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1B4332]" />
+              </div>
+            </div>
+            
+            <div className="group relative">
+              <button 
+                onClick={() => { setActiveTab('pins'); if (resultImage) handleAIDataGeneration('pinterest'); }}
+                className={`px-10 py-3 rounded-[1.5rem] text-sm font-bold transition-all flex items-center space-x-2 ${
+                  activeTab === 'pins' ? 'bg-[#79D2AF] text-white shadow-md' : 'text-[#2D6A4F] hover:bg-white/80'
+                }`}
+              >
+                <Pin className="w-5 h-5" />
+                <span>Create Pins</span>
+              </button>
+              <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-64 hidden group-hover:block bg-[#1B4332] text-white text-[11px] py-2 px-3 rounded-xl shadow-xl z-50 leading-relaxed font-medium">
+                <p className="font-bold border-b border-white/20 pb-1 mb-1">Pinterest Studio</p>
+                • 1000x1500px Auto-Resizing<br/>
+                • AI Title & Description Generation<br/>
+                • Automated Board Classification<br/>
+                • Life-like Design Demos
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1B4332]" />
+              </div>
+            </div>
+
+            <div className="group relative">
+              <button 
+                onClick={() => { setActiveTab('instagram'); if (resultImage) handleAIDataGeneration('instagram'); }}
+                className={`px-10 py-3 rounded-[1.5rem] text-sm font-bold transition-all flex items-center space-x-2 ${
+                  activeTab === 'instagram' ? 'bg-[#79D2AF] text-white shadow-md' : 'text-[#2D6A4F] hover:bg-white/80'
+                }`}
+              >
+                <Instagram className="w-5 h-5" />
+                <span>Instagram</span>
+              </button>
+              <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-64 hidden group-hover:block bg-[#1B4332] text-white text-[11px] py-2 px-3 rounded-xl shadow-xl z-50 leading-relaxed font-medium">
+                <p className="font-bold border-b border-white/20 pb-1 mb-1">Insta Optimizer</p>
+                • Post & Story Aspect Ratios<br/>
+                • AI Caption & Hashtag Generator<br/>
+                • High-Res Product Extracts<br/>
+                • Immersive Moodboard Layouts
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1B4332]" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <main className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <main className="space-y-10">
           
-          {/* Left Column: Input */}
-          <div className="space-y-8">
+          {/* Top Section: Config Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             
-            {/* Upload Area */}
-            <motion.div 
-              layout
-              className="bg-white rounded-3xl p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-white relative"
-            >
-              <h2 className="text-lg font-bold text-[#0F172A] mb-6 flex items-center">
-                <span className="bg-[#F27D26]/10 p-2 rounded-lg mr-3">
-                  <UploadCloud className="w-5 h-5 text-[#F27D26]" />
+            {/* Pattern Studio (Upload) */}
+            <motion.div layout className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-[#79D2AF]/10 border border-white flex flex-col h-full">
+              <h2 className="text-xl font-black text-[#2D6A4F] mb-6 flex items-center">
+                <span className="bg-[#79D2AF]/10 p-2.5 rounded-2xl mr-4 shadow-inner">
+                  <UploadCloud className="w-6 h-6 text-[#79D2AF]" />
                 </span>
-                Upload Pattern Tile
+                Pattern Studio
               </h2>
 
-              <div className="relative group">
+              <div className="flex-1 relative min-h-[200px]">
                 {!patternImage ? (
-                  <label className="border-2 border-dashed border-[#CBD5E1] rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-[#F27D26] hover:bg-[#F27D26]/5 transition-all group">
+                  <label className="h-full border-3 border-dashed border-[#79D2AF]/20 rounded-3xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#79D2AF] hover:bg-[#79D2AF]/5 transition-all group">
                     <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                    <UploadCloud className="w-10 h-10 text-[#64748B] mb-4 group-hover:scale-110 transition-transform group-hover:text-[#F27D26]" />
-                    <p className="text-sm font-medium text-[#475569]">Drag and drop or click to browse</p>
-                    <p className="text-xs text-[#94A3B8] mt-2">PNG, JPG or WEBP (Max 5MB)</p>
+                    <div className="bg-[#79D2AF]/5 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
+                      <UploadCloud className="w-10 h-10 text-[#79D2AF]" />
+                    </div>
+                    <p className="font-black text-[#2D6A4F]">Upload Pattern</p>
+                    <p className="text-[11px] text-[#52B788] mt-1 text-center font-medium">Seamless tiles work best</p>
                   </label>
                 ) : (
-                  <div className="relative rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-inner bg-[#F8FAFC]">
-                    <img 
-                      src={patternImage} 
-                      alt="Uploaded pattern" 
-                      className="w-full aspect-square object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
-                      <div className="flex justify-between items-center">
-                        <span className="text-white text-xs font-semibold">Ready to apply</span>
-                        <button 
-                          onClick={clearPattern}
-                          className="bg-white/20 hover:bg-white/40 backdrop-blur-md p-1.5 rounded-full transition-colors"
-                        >
-                          <X className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
-                    </div>
+                  <div className="h-full relative rounded-3xl overflow-hidden border-2 border-[#D8F3DC] shadow-inner bg-[#F1F8F5]">
+                    <img src={patternImage} alt="Tile" className="w-full h-full object-cover" />
+                    <button 
+                      onClick={clearPattern}
+                      className="absolute top-3 right-3 bg-white/90 hover:bg-white backdrop-blur-xl p-2 rounded-xl shadow-lg transition-all hover:scale-110"
+                    >
+                      <X className="w-4 h-4 text-[#2D6A4F]" />
+                    </button>
                   </div>
                 )}
               </div>
             </motion.div>
 
-            {/* Category Selector */}
-            <motion.div 
-              layout
-              className="bg-white rounded-3xl p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-white"
-            >
-              <h2 className="text-lg font-bold text-[#0F172A] mb-6">Select Mockup Target</h2>
-              <div className="grid grid-cols-2 gap-4">
+            {/* Mockup Target (Categories) */}
+            <motion.div layout className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-[#79D2AF]/10 border border-white flex flex-col h-full">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-black text-[#2D6A4F]">Mockup Target</h2>
+                <span className="bg-[#B7E4C7] text-[#1B4332] text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">
+                  AI Ready
+                </span>
+              </div>
+              
+              <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[200px]">
                 {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex items-center p-4 rounded-xl border-2 transition-all ${
-                      selectedCategory === cat.id 
-                      ? 'border-[#F27D26] bg-[#F27D26]/5 text-[#F27D26]' 
-                      : 'border-[#E2E8F0] hover:border-[#CBD5E1] text-[#64748B]'
-                    }`}
-                  >
-                    <span className={`p-2 rounded-lg mr-3 ${selectedCategory === cat.id ? 'bg-[#F27D26] text-white' : 'bg-[#F1F5F9] text-[#64748B]'}`}>
-                      {cat.icon}
-                    </span>
-                    <span className="font-semibold text-sm">{cat.name}</span>
-                  </button>
+                  <div key={cat.id} className="group relative">
+                    <button
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`w-full h-full flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all ${
+                        selectedCategory === cat.id 
+                        ? 'border-[#79D2AF] bg-[#79D2AF]/5 text-[#2D6A4F]' 
+                        : 'border-[#F1F8F5] hover:border-[#79D2AF]/40 text-[#52B788]'
+                      }`}
+                    >
+                      <span className={`p-2 rounded-xl mb-2 flex-shrink-0 ${selectedCategory === cat.id ? 'bg-[#79D2AF] text-white shadow-lg shadow-[#79D2AF]/20' : 'bg-[#F1F8F5] text-[#79D2AF]'}`}>
+                        {React.cloneElement(cat.icon as React.ReactElement, { className: 'w-5 h-5' })}
+                      </span>
+                      <span className="font-bold text-[10px] tracking-tight text-center leading-tight break-words uppercase">{cat.name}</span>
+                    </button>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-[#1B4332] text-white text-[10px] py-1.5 px-3 rounded-lg whitespace-nowrap z-50 pointer-events-none shadow-2xl">
+                      {cat.description}
+                    </div>
+                  </div>
                 ))}
               </div>
 
               <button
                 disabled={!patternImage || isGenerating}
                 onClick={handleGenerate}
-                className={`w-full mt-8 py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 transition-all ${
+                className={`w-full mt-6 py-4 rounded-2xl font-black flex items-center justify-center space-x-3 transition-all text-base group ${
                   !patternImage 
-                  ? 'bg-[#E2E8F0] text-[#94A3B8] cursor-not-allowed'
-                  : 'bg-[#0F172A] text-white shadow-lg hover:shadow-[#0F172A]/20 hover:-translate-y-0.5 active:translate-y-0'
+                  ? 'bg-[#D8F3DC] text-[#95D5B2] cursor-not-allowed'
+                  : 'bg-[#1B4332] text-[#D8F3DC] shadow-2xl shadow-[#1B4332]/30 hover:shadow-[#1B4332]/40 hover:-translate-y-1 active:translate-y-0'
                 }`}
               >
                 {isGenerating ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Processing Aesthetics...</span>
-                  </>
+                  <><Loader2 className="w-5 h-5 animate-spin" /><span>Rendering...</span></>
                 ) : (
-                  <>
-                    <span>Generate Mockup</span>
-                    <ChevronRight className="w-5 h-5" />
-                  </>
+                  <><span>Apply Scene</span><ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
                 )}
               </button>
             </motion.div>
-
           </div>
 
-          {/* Right Column: Result Output */}
-          <div className="sticky top-12">
-            <AnimatePresence mode="wait">
+          {/* Advanced Editor (New Section) */}
+          <motion.div layout className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-[#79D2AF]/10 border border-white">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-black text-[#2D6A4F] flex items-center">
+                <span className="bg-[#79D2AF]/10 p-2.5 rounded-2xl mr-4 shadow-inner">
+                  <Palette className="w-6 h-6 text-[#79D2AF]" />
+                </span>
+                고급 편집 기능 (Advanced Editor)
+              </h2>
+              <div className="flex items-center space-x-2 bg-[#F1F8F5] px-4 py-2 rounded-2xl">
+                <span className="text-xs font-bold text-[#52B788]">Scale: {patternScale.toFixed(1)}x</span>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between mb-3">
+                  <label className="text-sm font-bold text-[#2D6A4F]">패턴 모티브 크기 (Motif Size)</label>
+                  <span className="text-[10px] font-black text-[#79D2AF] uppercase tracking-widest">AI Precision</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.7" 
+                  max="1.5" 
+                  step="0.1" 
+                  value={patternScale}
+                  onChange={(e) => setPatternScale(parseFloat(e.target.value))}
+                  className="w-full h-3 bg-[#F1F8F5] rounded-lg appearance-none cursor-pointer accent-[#79D2AF]"
+                />
+                <div className="flex justify-between mt-2 text-[10px] font-bold text-[#95D5B2]">
+                  <span>Small / Intricate</span>
+                  <span>Standard</span>
+                  <span>Large / Bold</span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-[#79D2AF]/5 rounded-2xl border border-[#79D2AF]/20">
+                <p className="text-[11px] text-[#40916C] leading-relaxed">
+                  <span className="font-bold">Pro Tip:</span> Gemini AI will naturally reinterpret the scale within the context of the scene. Small scales work great for baby clothes, while large scales excel on wallpapers and bags.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Bottom Section: Result Area */}
+          <div className="space-y-10">
+            <div className="w-full">
+              <AnimatePresence mode="wait">
               {!resultImage && !isGenerating && !error ? (
                 <motion.div
                   key="empty"
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white rounded-[2rem] aspect-[4/5] flex flex-col items-center justify-center p-12 text-center border-4 border-dashed border-[#E2E8F0]"
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  className="bg-white rounded-[3rem] aspect-[16/10] flex flex-col items-center justify-center p-12 text-center border-4 border-dashed border-[#D8F3DC]"
                 >
-                  <div className="bg-[#F8FAFC] p-8 rounded-full mb-6">
-                    <ImageIcon className="w-16 h-16 text-[#CBD5E1]" />
+                  <div className="bg-[#F1F8F5] p-12 rounded-full mb-8 shadow-inner">
+                    <ImageIcon className="w-24 h-24 text-[#B7E4C7]" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#475569] mb-2">Your mockup will appear here</h3>
-                  <p className="text-[#94A3B8] text-sm">Upload a pattern and choose a category to start.</p>
+                  <h3 className="text-3xl font-black text-[#2D6A4F] mb-3">Visionary Canvas Ready</h3>
+                  <p className="text-[#52B788] text-lg font-medium max-w-md">Upload your pattern and select a target to begin the AI generation process.</p>
                 </motion.div>
               ) : isGenerating ? (
                 <motion.div
                   key="loading"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="bg-white rounded-[2rem] aspect-[4/5] flex flex-col items-center justify-center p-12 overflow-hidden relative shadow-2xl"
+                  className="bg-white rounded-[3rem] aspect-[16/10] flex flex-col items-center justify-center p-12 overflow-hidden relative shadow-2xl"
                 >
-                  {/* Skeleton Loader effects */}
-                  <div className="absolute inset-0 bg-[#F1F5F9] animate-pulse" />
-                  <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-20 h-20 bg-white/80 rounded-full flex items-center justify-center mb-6 backdrop-blur">
-                      <RefreshCw className="w-10 h-10 text-[#F27D26] animate-spin" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#F1F8F5] via-white to-[#E8F5E9] animate-pulse" />
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <div className="w-32 h-32 bg-white rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl backdrop-blur-xl">
+                      <RefreshCw className="w-16 h-16 text-[#79D2AF] animate-spin" />
                     </div>
-                    <p className="text-[#0F172A] font-bold text-lg">AI is crafting your scene...</p>
-                    <p className="text-[#64748B] text-sm mt-1">Applying patterns naturally with 8k quality</p>
+                    <p className="text-[#1B4332] font-black text-3xl mb-2">Analyzing Geometry & Light</p>
+                    <p className="text-[#40916C] text-lg font-semibold animate-bounce">Applying {selectedCategory} textures...</p>
                   </div>
                 </motion.div>
               ) : error ? (
@@ -257,19 +419,15 @@ export default function App() {
                   key="error"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="bg-red-50 rounded-[2rem] aspect-[4/5] flex flex-col items-center justify-center p-12 text-center border-2 border-red-100"
+                  className="bg-red-50 rounded-[3rem] aspect-[16/10] flex flex-col items-center justify-center p-12 text-center border-2 border-red-100"
                 >
-                  <div className="bg-red-100 p-6 rounded-full mb-6">
-                    <X className="w-12 h-12 text-red-500" />
+                  <div className="bg-red-100 p-8 rounded-[2rem] mb-8 shadow-inner">
+                    <X className="w-16 h-16 text-red-500" />
                   </div>
-                  <h3 className="text-xl font-bold text-red-900 mb-2">Something went wrong</h3>
-                  <p className="text-red-700/70 text-sm mb-6">{error}</p>
-                  <button 
-                    onClick={handleGenerate}
-                    className="bg-white text-red-600 px-6 py-2 rounded-xl font-bold shadow-sm hover:shadow-md transition-all active:scale-95"
-                  >
-                    Try Again
+                  <h3 className="text-3xl font-black text-red-900 mb-2">Algorithm Error</h3>
+                  <p className="text-red-700/80 text-lg font-medium mb-8 max-w-md">{error}</p>
+                  <button onClick={handleGenerate} className="bg-white text-red-600 px-10 py-3 rounded-2xl font-black shadow-lg hover:shadow-xl transition-all active:scale-95 border-2 border-red-100">
+                    Retry Rendering
                   </button>
                 </motion.div>
               ) : (
@@ -277,58 +435,205 @@ export default function App() {
                   key="result"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="bg-white rounded-[2rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] border border-white"
+                  className="bg-white rounded-[3.5rem] overflow-hidden shadow-[0_40px_100px_-30px_rgba(45,106,79,0.25)] border-4 border-white"
                 >
-                  <div className="relative group">
-                    <img 
-                      src={resultImage} 
-                      alt="Mockup result" 
-                      className="w-full h-full object-cover aspect-[4/5]"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute top-4 right-4 flex space-x-2">
-                      <button 
-                        onClick={downloadImage}
-                        className="bg-white/90 hover:bg-white backdrop-blur shadow-lg p-3 rounded-2xl text-[#0F172A] transition-all hover:scale-110"
-                        title="Download Mockup"
-                      >
-                        <Download className="w-5 h-5" />
-                      </button>
+                  <div className="relative w-full aspect-[16/10]">
+                    <img src={resultImage!} alt="Render" className="w-full h-full object-cover" />
+                    <div className="absolute top-8 right-8 flex space-x-4">
+                      
+                      <div className="group relative">
+                        <button onClick={() => downloadResized(2000, 2000, 'master-4k')} className="bg-white/95 hover:bg-white backdrop-blur shadow-2xl p-4 rounded-3xl text-[#1B4332] transition-all hover:scale-110 active:scale-90 border border-[#D8F3DC]">
+                          <Download className="w-6 h-6" />
+                        </button>
+                        <div className="absolute top-full right-0 mt-3 hidden group-hover:block bg-[#1B4332] text-white text-[11px] font-bold py-2 px-4 rounded-xl shadow-2xl z-[100] whitespace-nowrap">
+                          Download Master Render (High-Res)
+                        </div>
+                      </div>
+
+                      <div className="group relative">
+                        <button onClick={() => setResultImage(null)} className="bg-white/95 hover:bg-white backdrop-blur shadow-2xl p-4 rounded-3xl text-red-400 transition-all hover:scale-110 active:scale-90 border border-red-50">
+                          <X className="w-6 h-6" />
+                        </button>
+                        <div className="absolute top-full right-0 mt-3 hidden group-hover:block bg-red-800 text-white text-[11px] font-bold py-2 px-4 rounded-xl shadow-2xl z-[100]">
+                          Close Preview
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                      <div className="bg-white/80 backdrop-blur-md p-6 rounded-[2rem] border border-white/50 shadow-2xl">
+                        <p className="text-[10px] font-black text-[#52B788] uppercase tracking-[0.2em] mb-1">{selectedCategory.replace('_', ' ')} Applied</p>
+                        <h4 className="text-2xl font-black text-[#1B4332]">Visionary Render</h4>
+                      </div>
+                      <div className="group relative">
+                        <button onClick={handleGenerate} className="bg-[#1B4332] text-white p-5 rounded-[2rem] shadow-2xl transition-all hover:scale-110 active:rotate-45">
+                          <RefreshCw className="w-7 h-7" />
+                        </button>
+                        <div className="absolute bottom-full right-0 mb-4 hidden group-hover:block bg-[#1B4332] text-white text-[11px] font-bold py-2 px-4 rounded-xl shadow-2xl z-50">
+                          Iterate with new AI variation
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-6 bg-white flex justify-between items-center">
-                    <div>
-                      <p className="text-xs font-bold text-[#F27D26] uppercase tracking-widest mb-1">{selectedCategory}</p>
-                      <h4 className="text-lg font-bold text-[#0F172A]">Visionary Render</h4>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Functional Panels for Pins & Instagram */}
+            <AnimatePresence>
+              {resultImage && activeTab !== 'mockup' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="bg-white rounded-[3rem] p-10 border-4 border-[#D8F3DC] shadow-xl"
+                >
+                  <div className="flex items-center justify-between mb-8 border-b-2 border-dashed border-[#D8F3DC] pb-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-[#79D2AF] p-4 rounded-3xl text-white">
+                        {activeTab === 'pins' ? <Pin className="w-8 h-8" /> : <Instagram className="w-8 h-8" />}
+                      </div>
+                      <div>
+                        <h3 className="text-3xl font-black text-[#1B4332] leading-tight">
+                          {activeTab === 'pins' ? 'Pinterest Power Studio' : 'Instagram Engagement Pack'}
+                        </h3>
+                        <p className="text-[#52B788] font-bold text-lg">AI Assisted Social Content Generation</p>
+                      </div>
                     </div>
-                    <button 
-                      onClick={handleGenerate}
-                      className="flex items-center space-x-2 text-sm font-semibold text-[#64748B] hover:text-[#0F172A] transition-colors"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span>Regenerate</span>
-                    </button>
+                    {isGeneratingAIData && (
+                      <div className="flex items-center space-x-2 text-[#79D2AF] font-bold animate-pulse">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>AI Drafting...</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    {/* Left: Aspect Ratio Controls */}
+                    <div className="space-y-6">
+                      <h4 className="text-xl font-black text-[#2D6A4F] flex items-center">
+                        <ArrowRightLeft className="w-5 h-5 mr-3" /> Optimal Dimensions
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-1 gap-4">
+                        {activeTab === 'pins' ? (
+                          <>
+                            <button onClick={() => downloadResized(1000, 1500, 'pinterest-standard')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
+                              <div className="text-left">
+                                <p className="font-black text-[#1B4332]">Standard Pin</p>
+                                <p className="text-xs text-[#52B788]">1000 x 1500px (2:3)</p>
+                              </div>
+                              <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
+                            </button>
+                            <button className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] opacity-60 cursor-not-allowed group">
+                              <div className="text-left">
+                                <p className="font-black text-[#1B4332]">Process-to-GIF</p>
+                                <p className="text-xs text-[#52B788]">Animated demo pin</p>
+                              </div>
+                              <Loader2 className="w-5 h-5" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={() => downloadResized(1080, 1080, 'insta-feed')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
+                              <div className="text-left">
+                                <p className="font-black text-[#1B4332]">Feed Post</p>
+                                <p className="text-xs text-[#52B788]">1:1 Square Optimization</p>
+                              </div>
+                              <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
+                            </button>
+                            <button onClick={() => downloadResized(1080, 1350, 'insta-portrait')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
+                              <div className="text-left">
+                                <p className="font-black text-[#1B4332]">Portrait Feed</p>
+                                <p className="text-xs text-[#52B788]">4:5 Engagement Boost</p>
+                              </div>
+                              <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
+                            </button>
+                            <button onClick={() => downloadResized(1080, 1920, 'insta-story')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
+                              <div className="text-left">
+                                <p className="font-black text-[#1B4332]">Story / Reel</p>
+                                <p className="text-xs text-[#52B788]">9:16 Fullscreen Vertical</p>
+                              </div>
+                              <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: AI Data Content */}
+                    <div className="space-y-6">
+                      <h4 className="text-xl font-black text-[#2D6A4F] flex items-center">
+                        <Copy className="w-5 h-5 mr-3" /> AI Smart Copy
+                      </h4>
+                      <div className="bg-[#F8FAFC] rounded-[2.5rem] p-8 border-2 border-[#D8F3DC] shadow-inner relative min-h-[250px] flex flex-col">
+                        {aiData ? (
+                          <div className="space-y-6">
+                            {activeTab === 'pins' ? (
+                              <>
+                                <div>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Auto Theme</label>
+                                  <span className="bg-[#79D2AF] text-white px-3 py-1.5 rounded-full text-xs font-black shadow-lg shadow-[#79D2AF]/20">
+                                    {aiData.theme}
+                                  </span>
+                                </div>
+                                <div>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Pin Title</label>
+                                  <p className="font-black text-[#1B4332] text-lg">{aiData.title}</p>
+                                </div>
+                                <div>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Description</label>
+                                  <p className="text-sm text-[#40916C] leading-relaxed font-medium italic">"{aiData.description}"</p>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Caption</label>
+                                  <p className="text-sm text-[#1B4332] font-semibold leading-relaxed line-clamp-6">{aiData.caption}</p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {aiData.hashtags.map((h: string) => (
+                                    <span key={h} className="text-[#79D2AF] font-black text-xs hover:underline cursor-pointer">{h}</span>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                            <button 
+                              onClick={() => copyToClipboard(activeTab === 'pins' ? `${aiData.title}\n\n${aiData.description}` : aiData.caption)}
+                              className="mt-auto w-full py-3 bg-[#1B4332] text-white rounded-2xl font-bold flex items-center justify-center space-x-2 shadow-xl hover:-translate-y-1 transition-all"
+                            >
+                              {copied ? <><CheckCircle2 className="w-5 h-5"/><span>Copied!</span></> : <><Copy className="w-5 h-5"/><span>Copy Text Pak</span></>}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+                            <RefreshCw className="w-12 h-12 text-[#D8F3DC] mb-4 animate-spin-slow" />
+                            <p className="text-[#95D5B2] font-black">Waiting for Scene Generation...</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-
-        </main>
+        </div>
+      </main>
       </div>
 
-      {/* Footer (Aesthetic) */}
-      <footer className="max-w-4xl mx-auto px-4 py-12 text-center border-t border-[#E2E8F0] mt-12 bg-white/30 rounded-t-[3rem]">
-        <p className="text-sm font-medium text-[#94A3B8] mb-4">
-          Built with Gemini 2.5 Flash Image Model for precise aesthetic rendering.
+      {/* Footer Design */}
+      <footer className="max-w-6xl mx-auto px-4 py-16 text-center border-t border-[#79D2AF]/20 mt-20 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-[#79D2AF]/50 to-transparent" />
+        <p className="text-sm font-black text-[#52B788] mb-8 uppercase tracking-[0.3em]">
+          Engineered by Aedelstudio with Gemini Generative Imagery
         </p>
-        <div className="flex justify-center space-x-8 opacity-50 grayscale hover:grayscale-0 transition-all">
-          <img src="https://www.gstatic.com/lamda/images/favicon_v1_150160b1464da4a7a08e1.png" alt="Google AI" className="h-6" referrerPolicy="no-referrer" />
-          <div className="h-6 w-px bg-[#E2E8F0]" />
-          <span className="font-bold tracking-tighter text-[#1E293B]">AIS STUDIO BUILD</span>
+        <div className="flex justify-center items-center space-x-12">
+          <img src="https://www.gstatic.com/lamda/images/favicon_v1_150160b1464da4a7a08e1.png" alt="Google AI" className="h-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all pointer-events-none" />
+          <div className="h-12 w-[2px] bg-[#79D2AF]/20" />
+          <span className="text-3xl font-black italic tracking-tighter text-[#1B4332] opacity-30 select-none">AEDELSTUDIO BUILD</span>
         </div>
       </footer>
-
     </div>
   );
 }
