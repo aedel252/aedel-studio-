@@ -68,8 +68,8 @@ export async function generateAIData(patternBase64: string, mimeType: string, ty
   if (!process.env.GEMINI_API_KEY) return null;
 
   const prompt = type === 'pinterest' 
-    ? "Analyze this pattern and provide: 1. A catchy Pin Title. 2. A descriptive Pin description (max 500 chars). 3. Thematic classification (e.g., Botanical, Vintage, Modern). Return in JSON format: { title, description, theme }"
-    : "Analyze this pattern and provide: 1. An engaging Instagram caption with storytelling elements. 2. A set of 10 relevant hashtags. Return in JSON format: { caption, hashtags }";
+    ? "이 패턴을 분석하여 다음을 제공하세요: 1. 시선을 끄는 핀 제목. 2. 상세한 핀 설명 (최대 500자). 3. 테마 분류 (예: 보태니컬, 빈티지, 모던). 반드시 한국어로 작성하고 JSON 형식으로 반환하세요: { title, description, theme }"
+    : "이 패턴을 분석하여 다음을 제공하세요: 1. 스토리텔링 요소가 포함된 매력적인 인스타그램 캡션. 2. 관련 해시태그 10개 (# 심볼을 반드시 포함). 반드시 한국어로 작성하고 JSON 형식으로 반환하세요: { caption, hashtags }";
 
   try {
     const response = await ai.models.generateContent({

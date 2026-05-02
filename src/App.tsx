@@ -32,16 +32,16 @@ import {
 import { generateMockup, MockupCategory, generateAIData } from './services/geminiService';
 
 const CATEGORIES: { id: MockupCategory; name: string; icon: React.ReactNode; description: string }[] = [
-  { id: 'wallpaper', name: 'Wallpaper', icon: <ImageIcon className="w-5 h-5" />, description: 'Apply seamless patterns to interior walls' },
-  { id: 'bag', name: 'Bag', icon: <ShoppingBag className="w-5 h-5" />, description: 'Visualize patterns on fashion tote bags' },
-  { id: 'clothing', name: 'Clothing', icon: <Shirt className="w-5 h-5" />, description: 'Mockup patterns on apparel and dresses' },
-  { id: 'baby_clothes', name: 'Baby Clothes', icon: <Baby className="w-5 h-5" />, description: 'Sweet patterns for infant onesies and blankets' },
-  { id: 'curtains', name: 'Curtains', icon: <Wind className="w-5 h-5" />, description: 'See textures on window drapery' },
-  { id: 'kitchen', name: 'Kitchen', icon: <Utensils className="w-5 h-5" />, description: 'Tile patterns and kitchen fabric mockups' },
-  { id: 'living_room', name: 'Living Room', icon: <Sofa className="w-5 h-5" />, description: 'Full room visualization with pillows and rugs' },
-  { id: 'phone_case', name: 'Phone Case', icon: <Smartphone className="w-5 h-5" />, description: 'Digital pattern wraps for mobile devices' },
-  { id: 'notebook', name: 'Notebook', icon: <Book className="w-5 h-5" />, description: 'Patterns on stationery and book covers' },
-  { id: 'moodboard', name: 'Moodboard', icon: <Palette className="w-5 h-5" />, description: 'Lifestyle moodboard with matching props and colors' },
+  { id: 'wallpaper', name: '벽지', icon: <ImageIcon className="w-5 h-5" />, description: '인테리어 벽면에 이음새 없는 패턴 적용' },
+  { id: 'bag', name: '가방', icon: <ShoppingBag className="w-5 h-5" />, description: '패션 토트백에 패턴 시각화' },
+  { id: 'clothing', name: '의류', icon: <Shirt className="w-5 h-5" />, description: '의복 및 드레스에 패턴 목업' },
+  { id: 'baby_clothes', name: '아기 옷', icon: <Baby className="w-5 h-5" />, description: '유아용 바디슈트 및 담요를 위한 귀여운 패턴' },
+  { id: 'curtains', name: '커튼', icon: <Wind className="w-5 h-5" />, description: '창문 커튼의 질감 확인' },
+  { id: 'kitchen', name: '주방', icon: <Utensils className="w-5 h-5" />, description: '타일 패턴 및 주방 패브릭 목업' },
+  { id: 'living_room', name: '거실', icon: <Sofa className="w-5 h-5" />, description: '베개와 러그가 포함된 거실 전체 시각화' },
+  { id: 'phone_case', name: '폰 케이스', icon: <Smartphone className="w-5 h-5" />, description: '모바일 기기용 디지털 패턴 랩' },
+  { id: 'notebook', name: '노트', icon: <Book className="w-5 h-5" />, description: '문구류 및 책 표지 패턴' },
+  { id: 'moodboard', name: '무드보드', icon: <Palette className="w-5 h-5" />, description: '어울리는 소품과 색상을 포함한 라이프스타일 무드보드' },
 ];
 
 type ActiveTab = 'mockup' | 'pins' | 'instagram';
@@ -179,10 +179,10 @@ export default function App() {
             <span className="text-xs uppercase tracking-widest font-bold text-[#2D6A4F]">Aedelstudio Engine v2.5</span>
           </div>
           <h1 className="text-6xl font-black tracking-tight text-[#2D6A4F] mb-4 drop-shadow-sm">
-            aedelstudio Mockup Generator
+            aedelstudio 목업 생성기
           </h1>
           <p className="text-xl text-[#52B788] max-w-2xl mx-auto font-medium">
-            Elevate your designs with AI-powered realism. Visualize, Optimize, and Share.
+            AI 기반의 사실적인 목업으로 디자인의 가치를 높이세요. 시각화하고 최적화하여 공유하세요.
           </p>
         </motion.header>
 
@@ -198,10 +198,10 @@ export default function App() {
                 }`}
               >
                 <ImageIcon className="w-5 h-5" />
-                <span>Mockup</span>
+                <span>목업 생성</span>
               </button>
               <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 hidden group-hover:block bg-[#1B4332] text-white text-[11px] py-2 px-3 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-bottom-2">
-                Create new photorealistic mockups from your pattern tiles.
+                패턴 타일로 사실적인 목업을 생성합니다.
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1B4332]" />
               </div>
             </div>
@@ -214,14 +214,14 @@ export default function App() {
                 }`}
               >
                 <Pin className="w-5 h-5" />
-                <span>Create Pins</span>
+                <span>핀 만들기</span>
               </button>
               <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-64 hidden group-hover:block bg-[#1B4332] text-white text-[11px] py-2 px-3 rounded-xl shadow-xl z-50 leading-relaxed font-medium">
-                <p className="font-bold border-b border-white/20 pb-1 mb-1">Pinterest Studio</p>
-                • 1000x1500px Auto-Resizing<br/>
-                • AI Title & Description Generation<br/>
-                • Automated Board Classification<br/>
-                • Life-like Design Demos
+                <p className="font-bold border-b border-white/20 pb-1 mb-1">핀터레스트 스튜디오</p>
+                • 1000x1500px 자동 리사이징<br/>
+                • AI 제목 및 설명 생성<br/>
+                • 자동 보드 분류<br/>
+                • 생생한 디자인 데모
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1B4332]" />
               </div>
             </div>
@@ -234,14 +234,14 @@ export default function App() {
                 }`}
               >
                 <Instagram className="w-5 h-5" />
-                <span>Instagram</span>
+                <span>인스타그램</span>
               </button>
               <div className="absolute -top-28 left-1/2 -translate-x-1/2 w-64 hidden group-hover:block bg-[#1B4332] text-white text-[11px] py-2 px-3 rounded-xl shadow-xl z-50 leading-relaxed font-medium">
-                <p className="font-bold border-b border-white/20 pb-1 mb-1">Insta Optimizer</p>
-                • Post & Story Aspect Ratios<br/>
-                • AI Caption & Hashtag Generator<br/>
-                • High-Res Product Extracts<br/>
-                • Immersive Moodboard Layouts
+                <p className="font-bold border-b border-white/20 pb-1 mb-1">인스타 최적화</p>
+                • 포스트 및 스토리 비율<br/>
+                • AI 캡션 및 해시태그 생성<br/>
+                • 고해상도 제품 추출<br/>
+                • 몰입형 무드보드 레이아웃
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1B4332]" />
               </div>
             </div>
@@ -259,7 +259,7 @@ export default function App() {
                 <span className="bg-[#79D2AF]/10 p-2.5 rounded-2xl mr-4 shadow-inner">
                   <UploadCloud className="w-6 h-6 text-[#79D2AF]" />
                 </span>
-                Pattern Studio
+                패턴 스튜디오
               </h2>
 
               <div className="flex-1 relative min-h-[200px]">
@@ -269,8 +269,8 @@ export default function App() {
                     <div className="bg-[#79D2AF]/5 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
                       <UploadCloud className="w-10 h-10 text-[#79D2AF]" />
                     </div>
-                    <p className="font-black text-[#2D6A4F]">Upload Pattern</p>
-                    <p className="text-[11px] text-[#52B788] mt-1 text-center font-medium">Seamless tiles work best</p>
+                    <p className="font-black text-[#2D6A4F]">패턴 업로드</p>
+                    <p className="text-[11px] text-[#52B788] mt-1 text-center font-medium">이음새 없는 타일이 가장 좋습니다</p>
                   </label>
                 ) : (
                   <div className="h-full relative rounded-3xl overflow-hidden border-2 border-[#D8F3DC] shadow-inner bg-[#F1F8F5]">
@@ -289,9 +289,9 @@ export default function App() {
             {/* Mockup Target (Categories) */}
             <motion.div layout className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-[#79D2AF]/10 border border-white flex flex-col h-full">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-black text-[#2D6A4F]">Mockup Target</h2>
+                <h2 className="text-xl font-black text-[#2D6A4F]">목업 대상</h2>
                 <span className="bg-[#B7E4C7] text-[#1B4332] text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">
-                  AI Ready
+                  AI 준비됨
                 </span>
               </div>
               
@@ -328,9 +328,9 @@ export default function App() {
                 }`}
               >
                 {isGenerating ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /><span>Rendering...</span></>
+                  <><Loader2 className="w-5 h-5 animate-spin" /><span>렌더링 중...</span></>
                 ) : (
-                  <><span>Apply Scene</span><ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                  <><span>장면에 적용</span><ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
                 )}
               </button>
             </motion.div>
@@ -343,18 +343,18 @@ export default function App() {
                 <span className="bg-[#79D2AF]/10 p-2.5 rounded-2xl mr-4 shadow-inner">
                   <Palette className="w-6 h-6 text-[#79D2AF]" />
                 </span>
-                고급 편집 기능 (Advanced Editor)
+                고급 편집 기능
               </h2>
               <div className="flex items-center space-x-2 bg-[#F1F8F5] px-4 py-2 rounded-2xl">
-                <span className="text-xs font-bold text-[#52B788]">Scale: {patternScale.toFixed(1)}x</span>
+                <span className="text-xs font-bold text-[#52B788]">배율: {patternScale.toFixed(1)}x</span>
               </div>
             </div>
 
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between mb-3">
-                  <label className="text-sm font-bold text-[#2D6A4F]">패턴 모티브 크기 (Motif Size)</label>
-                  <span className="text-[10px] font-black text-[#79D2AF] uppercase tracking-widest">AI Precision</span>
+                  <label className="text-sm font-bold text-[#2D6A4F]">패턴 크기</label>
+                  <span className="text-[10px] font-black text-[#79D2AF] uppercase tracking-widest">AI 정밀도</span>
                 </div>
                 <input 
                   type="range" 
@@ -366,15 +366,15 @@ export default function App() {
                   className="w-full h-3 bg-[#F1F8F5] rounded-lg appearance-none cursor-pointer accent-[#79D2AF]"
                 />
                 <div className="flex justify-between mt-2 text-[10px] font-bold text-[#95D5B2]">
-                  <span>Small / Intricate</span>
-                  <span>Standard</span>
-                  <span>Large / Bold</span>
+                  <span>작고 섬세하게</span>
+                  <span>표준</span>
+                  <span>크고 대담하게</span>
                 </div>
               </div>
 
               <div className="p-4 bg-[#79D2AF]/5 rounded-2xl border border-[#79D2AF]/20">
                 <p className="text-[11px] text-[#40916C] leading-relaxed">
-                  <span className="font-bold">Pro Tip:</span> Gemini AI will naturally reinterpret the scale within the context of the scene. Small scales work great for baby clothes, while large scales excel on wallpapers and bags.
+                  <span className="font-bold">팁:</span> Gemini AI가 장면의 맥락에 맞춰 패턴 크기를 자연스럽게 재해석합니다. 작은 크기는 아기 옷에, 큰 크기는 벽지나 가방에 잘 어울립니다.
                 </p>
               </div>
             </div>
@@ -395,8 +395,8 @@ export default function App() {
                   <div className="bg-[#F1F8F5] p-12 rounded-full mb-8 shadow-inner">
                     <ImageIcon className="w-24 h-24 text-[#B7E4C7]" />
                   </div>
-                  <h3 className="text-3xl font-black text-[#2D6A4F] mb-3">Visionary Canvas Ready</h3>
-                  <p className="text-[#52B788] text-lg font-medium max-w-md">Upload your pattern and select a target to begin the AI generation process.</p>
+                  <h3 className="text-3xl font-black text-[#2D6A4F] mb-3">비저너리 캔버스 준비됨</h3>
+                  <p className="text-[#52B788] text-lg font-medium max-w-md">패턴을 업로드하고 대상을 선택하여 AI 생성을 시작하세요.</p>
                 </motion.div>
               ) : isGenerating ? (
                 <motion.div
@@ -410,8 +410,8 @@ export default function App() {
                     <div className="w-32 h-32 bg-white rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl backdrop-blur-xl">
                       <RefreshCw className="w-16 h-16 text-[#79D2AF] animate-spin" />
                     </div>
-                    <p className="text-[#1B4332] font-black text-3xl mb-2">Analyzing Geometry & Light</p>
-                    <p className="text-[#40916C] text-lg font-semibold animate-bounce">Applying {selectedCategory} textures...</p>
+                    <p className="text-[#1B4332] font-black text-3xl mb-2">기하학 및 조명 분석 중</p>
+                    <p className="text-[#40916C] text-lg font-semibold animate-bounce">{selectedCategory} 질감 적용 중...</p>
                   </div>
                 </motion.div>
               ) : error ? (
@@ -424,10 +424,10 @@ export default function App() {
                   <div className="bg-red-100 p-8 rounded-[2rem] mb-8 shadow-inner">
                     <X className="w-16 h-16 text-red-500" />
                   </div>
-                  <h3 className="text-3xl font-black text-red-900 mb-2">Algorithm Error</h3>
+                  <h3 className="text-3xl font-black text-red-900 mb-2">알고리즘 오류</h3>
                   <p className="text-red-700/80 text-lg font-medium mb-8 max-w-md">{error}</p>
                   <button onClick={handleGenerate} className="bg-white text-red-600 px-10 py-3 rounded-2xl font-black shadow-lg hover:shadow-xl transition-all active:scale-95 border-2 border-red-100">
-                    Retry Rendering
+                    다시 렌더링
                   </button>
                 </motion.div>
               ) : (
@@ -446,7 +446,7 @@ export default function App() {
                           <Download className="w-6 h-6" />
                         </button>
                         <div className="absolute top-full right-0 mt-3 hidden group-hover:block bg-[#1B4332] text-white text-[11px] font-bold py-2 px-4 rounded-xl shadow-2xl z-[100] whitespace-nowrap">
-                          Download Master Render (High-Res)
+                          마스터 렌더링 다운로드 (고해상도)
                         </div>
                       </div>
 
@@ -455,22 +455,22 @@ export default function App() {
                           <X className="w-6 h-6" />
                         </button>
                         <div className="absolute top-full right-0 mt-3 hidden group-hover:block bg-red-800 text-white text-[11px] font-bold py-2 px-4 rounded-xl shadow-2xl z-[100]">
-                          Close Preview
+                          미리보기 닫기
                         </div>
                       </div>
                     </div>
 
                     <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
                       <div className="bg-white/80 backdrop-blur-md p-6 rounded-[2rem] border border-white/50 shadow-2xl">
-                        <p className="text-[10px] font-black text-[#52B788] uppercase tracking-[0.2em] mb-1">{selectedCategory.replace('_', ' ')} Applied</p>
-                        <h4 className="text-2xl font-black text-[#1B4332]">Visionary Render</h4>
+                        <p className="text-[10px] font-black text-[#52B788] uppercase tracking-[0.2em] mb-1">{selectedCategory.replace('_', ' ')} 적용됨</p>
+                        <h4 className="text-2xl font-black text-[#1B4332]">비저너리 렌더링</h4>
                       </div>
                       <div className="group relative">
                         <button onClick={handleGenerate} className="bg-[#1B4332] text-white p-5 rounded-[2rem] shadow-2xl transition-all hover:scale-110 active:rotate-45">
                           <RefreshCw className="w-7 h-7" />
                         </button>
                         <div className="absolute bottom-full right-0 mb-4 hidden group-hover:block bg-[#1B4332] text-white text-[11px] font-bold py-2 px-4 rounded-xl shadow-2xl z-50">
-                          Iterate with new AI variation
+                          새로운 AI 변형으로 반복 생성
                         </div>
                       </div>
                     </div>
@@ -495,15 +495,15 @@ export default function App() {
                       </div>
                       <div>
                         <h3 className="text-3xl font-black text-[#1B4332] leading-tight">
-                          {activeTab === 'pins' ? 'Pinterest Power Studio' : 'Instagram Engagement Pack'}
+                          {activeTab === 'pins' ? '핀터레스트 파워 스튜디오' : '인스타그램 인게이지먼트 팩'}
                         </h3>
-                        <p className="text-[#52B788] font-bold text-lg">AI Assisted Social Content Generation</p>
+                        <p className="text-[#52B788] font-bold text-lg">AI 지원 소셜 콘텐츠 생성</p>
                       </div>
                     </div>
                     {isGeneratingAIData && (
                       <div className="flex items-center space-x-2 text-[#79D2AF] font-bold animate-pulse">
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>AI Drafting...</span>
+                        <span>AI 초안 작성 중...</span>
                       </div>
                     )}
                   </div>
@@ -512,46 +512,40 @@ export default function App() {
                     {/* Left: Aspect Ratio Controls */}
                     <div className="space-y-6">
                       <h4 className="text-xl font-black text-[#2D6A4F] flex items-center">
-                        <ArrowRightLeft className="w-5 h-5 mr-3" /> Optimal Dimensions
+                        <ArrowRightLeft className="w-5 h-5 mr-3" /> 최적 규격
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-1 gap-4">
                         {activeTab === 'pins' ? (
                           <>
                             <button onClick={() => downloadResized(1000, 1500, 'pinterest-standard')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
                               <div className="text-left">
-                                <p className="font-black text-[#1B4332]">Standard Pin</p>
+                                <p className="font-black text-[#1B4332]">표준 핀</p>
                                 <p className="text-xs text-[#52B788]">1000 x 1500px (2:3)</p>
                               </div>
                               <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
                             </button>
-                            <button className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] opacity-60 cursor-not-allowed group">
-                              <div className="text-left">
-                                <p className="font-black text-[#1B4332]">Process-to-GIF</p>
-                                <p className="text-xs text-[#52B788]">Animated demo pin</p>
-                              </div>
-                              <Loader2 className="w-5 h-5" />
-                            </button>
+
                           </>
                         ) : (
                           <>
                             <button onClick={() => downloadResized(1080, 1080, 'insta-feed')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
                               <div className="text-left">
-                                <p className="font-black text-[#1B4332]">Feed Post</p>
-                                <p className="text-xs text-[#52B788]">1:1 Square Optimization</p>
+                                <p className="font-black text-[#1B4332]">피드 포스트</p>
+                                <p className="text-xs text-[#52B788]">1:1 정사각형 최적화</p>
                               </div>
                               <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
                             </button>
                             <button onClick={() => downloadResized(1080, 1350, 'insta-portrait')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
                               <div className="text-left">
-                                <p className="font-black text-[#1B4332]">Portrait Feed</p>
-                                <p className="text-xs text-[#52B788]">4:5 Engagement Boost</p>
+                                <p className="font-black text-[#1B4332]">세로 피드</p>
+                                <p className="text-xs text-[#52B788]">4:5 참여도 향상</p>
                               </div>
                               <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
                             </button>
                             <button onClick={() => downloadResized(1080, 1920, 'insta-story')} className="flex items-center justify-between p-6 bg-[#F1F8F5] rounded-3xl border-2 border-transparent hover:border-[#79D2AF] transition-all group">
                               <div className="text-left">
-                                <p className="font-black text-[#1B4332]">Story / Reel</p>
-                                <p className="text-xs text-[#52B788]">9:16 Fullscreen Vertical</p>
+                                <p className="font-black text-[#1B4332]">스토리 / 릴스</p>
+                                <p className="text-xs text-[#52B788]">9:16 전체화면 세로형</p>
                               </div>
                               <Download className="w-6 h-6 text-[#79D2AF] group-hover:translate-y-1 transition-transform" />
                             </button>
@@ -563,7 +557,7 @@ export default function App() {
                     {/* Right: AI Data Content */}
                     <div className="space-y-6">
                       <h4 className="text-xl font-black text-[#2D6A4F] flex items-center">
-                        <Copy className="w-5 h-5 mr-3" /> AI Smart Copy
+                        <Copy className="w-5 h-5 mr-3" /> AI 스마트 카피
                       </h4>
                       <div className="bg-[#F8FAFC] rounded-[2.5rem] p-8 border-2 border-[#D8F3DC] shadow-inner relative min-h-[250px] flex flex-col">
                         {aiData ? (
@@ -571,44 +565,53 @@ export default function App() {
                             {activeTab === 'pins' ? (
                               <>
                                 <div>
-                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Auto Theme</label>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">자동 테마</label>
                                   <span className="bg-[#79D2AF] text-white px-3 py-1.5 rounded-full text-xs font-black shadow-lg shadow-[#79D2AF]/20">
                                     {aiData.theme}
                                   </span>
                                 </div>
                                 <div>
-                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Pin Title</label>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">핀 제목</label>
                                   <p className="font-black text-[#1B4332] text-lg">{aiData.title}</p>
                                 </div>
                                 <div>
-                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Description</label>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">설명</label>
                                   <p className="text-sm text-[#40916C] leading-relaxed font-medium italic">"{aiData.description}"</p>
                                 </div>
                               </>
                             ) : (
                               <>
                                 <div>
-                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">Caption</label>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-[#52B788] block mb-2">캡션</label>
                                   <p className="text-sm text-[#1B4332] font-semibold leading-relaxed line-clamp-6">{aiData.caption}</p>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                  {aiData.hashtags.map((h: string) => (
-                                    <span key={h} className="text-[#79D2AF] font-black text-xs hover:underline cursor-pointer">{h}</span>
-                                  ))}
+                                  {(Array.isArray(aiData.hashtags) ? aiData.hashtags : []).map((h: string) => {
+                                    const tag = h.startsWith('#') ? h : `#${h}`;
+                                    return (
+                                      <span key={h} className="text-[#79D2AF] font-black text-xs hover:underline cursor-pointer">{tag}</span>
+                                    );
+                                  })}
                                 </div>
                               </>
                             )}
                             <button 
-                              onClick={() => copyToClipboard(activeTab === 'pins' ? `${aiData.title}\n\n${aiData.description}` : aiData.caption)}
+                              onClick={() => {
+                                const tags = Array.isArray(aiData.hashtags) ? aiData.hashtags : [];
+                                const textToCopy = activeTab === 'pins' 
+                                  ? `${aiData.title}\n\n${aiData.description}` 
+                                  : `${aiData.caption}\n\n${tags.map((h: string) => h.startsWith('#') ? h : `#${h}`).join(' ')}`;
+                                copyToClipboard(textToCopy);
+                              }}
                               className="mt-auto w-full py-3 bg-[#1B4332] text-white rounded-2xl font-bold flex items-center justify-center space-x-2 shadow-xl hover:-translate-y-1 transition-all"
                             >
-                              {copied ? <><CheckCircle2 className="w-5 h-5"/><span>Copied!</span></> : <><Copy className="w-5 h-5"/><span>Copy Text Pak</span></>}
+                              {copied ? <><CheckCircle2 className="w-5 h-5"/><span>복사됨!</span></> : <><Copy className="w-5 h-5"/><span>텍스트 복사</span></>}
                             </button>
                           </div>
                         ) : (
                           <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
                             <RefreshCw className="w-12 h-12 text-[#D8F3DC] mb-4 animate-spin-slow" />
-                            <p className="text-[#95D5B2] font-black">Waiting for Scene Generation...</p>
+                            <p className="text-[#95D5B2] font-black">장면 생성을 기다리는 중...</p>
                           </div>
                         )}
                       </div>
@@ -626,7 +629,7 @@ export default function App() {
       <footer className="max-w-6xl mx-auto px-4 py-16 text-center border-t border-[#79D2AF]/20 mt-20 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-[#79D2AF]/50 to-transparent" />
         <p className="text-sm font-black text-[#52B788] mb-8 uppercase tracking-[0.3em]">
-          Engineered by Aedelstudio with Gemini Generative Imagery
+          Gemini 생성형 이미지를 활용한 aedelstudio 기술
         </p>
         <div className="flex justify-center items-center space-x-12">
           <img src="https://www.gstatic.com/lamda/images/favicon_v1_150160b1464da4a7a08e1.png" alt="Google AI" className="h-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all pointer-events-none" />

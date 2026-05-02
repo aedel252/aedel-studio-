@@ -1,6 +1,7 @@
 {
-  "name": "aedelstudio Mockup Generator",
-  "description": "Create realistic mockups of wallpapers, bags, clothes, and curtains using your custom pattern tiles.",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
+  "name": "에이델스튜디오 목업 생성기",
+  "description": "사용자의 패턴 타일을 활용하여 벽지, 가방, 의류, 커튼 등에 적용된 사실적인 목업 이미지를 생성합니다.",
+  "TargetFile": "/metadata.json",
+  "toolAction": "Editing file",
+  "toolSummary": "Metadata translation"
 }
