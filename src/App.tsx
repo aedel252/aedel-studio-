@@ -358,8 +358,8 @@ export default function App() {
                 </div>
                 <input 
                   type="range" 
-                  min="0.7" 
-                  max="1.5" 
+                  min="0.5" 
+                  max="2.0" 
                   step="0.1" 
                   value={patternScale}
                   onChange={(e) => setPatternScale(parseFloat(e.target.value))}
